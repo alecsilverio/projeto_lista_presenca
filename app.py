@@ -1,35 +1,51 @@
 from flask import Flask, render_template, request, redirect, url_for
 import csv
 import os
-from datetime import datetime
 
 app = Flask(__name__)
 
-# Criar arquivo CSV se não existir
-if not os.path.exists('presencas.csv'):
-    with open('presencas.csv', 'w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['Identificação', 'Nome', 'Latitude', 'Longitude', 'Data', 'Hora'])
+ADMIN_PASSWORD = "051012"
+CSV_FILE = "presencas.csv"
 
-@app.route('/')
+# Garante que o CSV exista
+if not os.path.exists(CSV_FILE):
+    with open(CSV_FILE, mode='w', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerow(['Nome', 'CPF/RA', 'Curso', 'Turma', 'Externo Info', 'Latitude', 'Longitude'])
+
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+    success_message = None
+    if request.method == 'POST':
+        nome = request.form['nome']
+        cpf_rh = request.form['cpf_rh']
+        curso = request.form['curso']
+        turma = request.form['turma']
+        externo_info = request.form['externo_info']
+        latitude = request.form['latitude']
+        longitude = request.form['longitude']
 
-@app.route('/registrar', methods=['POST'])
-def registrar():
-    identificacao = request.form['identificacao']
-    nome = request.form['nome']
-    latitude = request.form.get('latitude')
-    longitude = request.form.get('longitude')
-    data = datetime.now().strftime('%d/%m/%Y')
-    hora = datetime.now().strftime('%H:%M:%S')
+        with open(CSV_FILE, mode='a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow([nome, cpf_rh, curso, turma, externo_info, latitude, longitude])
 
-    # Salvar no CSV
-    with open('presencas.csv', 'a', newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow([identificacao, nome, latitude, longitude, data, hora])
+        success_message = "✅ Presença registrada com sucesso!"
 
-    return '✅ Presença registrada com sucesso!'
+    return render_template('index.html', success_message=success_message)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+@app.route('/admin', methods=['GET'])
+def admin():
+    senha = request.args.get('senha')
+    if senha != ADMIN_PASSWORD:
+        return "❌ Acesso negado. Senha incorreta.", 403
+
+    with open(CSV_FILE, mode='r', newline='', encoding='utf-8') as f:
+        reader = csv.reader(f)
+        presencas = list(reader)
+
+    return render_template('admin.html', presencas=presencas)
+
+if __name__ == "__main__":
+    from os import environ
+    port = int(environ.get('PORT', 5000))
+    app.run(host="0.0.0.0", port=port)

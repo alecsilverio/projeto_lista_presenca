@@ -2,107 +2,125 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Presença - Colação de Grau do TADS 2025</title>
     <style>
         body {
+            background-color:rgb(0, 74, 152);
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #007BFF; /* Azul forte */
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             height: 100vh;
+            margin: 0;
+            color: white;
         }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        table {
+            background: white;
+            padding: 50px;
+            border-radius: 50px;
+            color:rgb(0, 0, 0);
+            box-shadow: 0 0 10px rgba(0,0,0,0);
             text-align: center;
-            width: 90%;
-            max-width: 400px;
         }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 22px;
-        }
-        label {
-            display: block;
-            margin-top: 10px;
-            text-align: left;
-            font-weight: bold;
-            color: #333;
-        }
-        input {
+        input, select {
+            margin: 20px 0;
+            padding: 20px;
             width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border-radius: 5px;
+            border-radius: 100px;
             border: 1px solid #ccc;
         }
         button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 20px;
-            background-color: #28a745; /* verde */
+            background-color: green;
             color: white;
+            padding: 10px;
+            width: 100%;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
+            font-weight: bold;
         }
-        button:hover {
-            background-color: #218838;
-        }
-        .info {
-            margin-top: 15px;
-            font-size: 12px;
-            color: #555;
+        .success {
+            margin-top: 20px;
+            color: #28a745;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Lista de Presença<br>Colação de Grau do TADS 2025</h1>
+    <table>
+        <tr>
+            <td colspan="2">
+                <h2>Lista de Presença - Colação de Grau do TADS 2025</h2>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <form method="POST" onsubmit="return checkLocation()">
+                    <input type="text" name="nome" placeholder="Seu nome completo" required>
 
-        <form method="POST" action="/registrar">
-            <label for="identificacao">CPF ou RA:</label>
-            <input type="text" name="identificacao" id="identificacao" required>
+                    <input type="text" name="cpf_rh" placeholder="Digite seu CPF ou RA" required>
 
-            <label for="nome">Nome Completo:</label>
-            <input type="text" name="nome" id="nome" required>
+                    <select name="curso" id="curso" required onchange="checkExterno()">
+                        <option value="" disabled selected>Selecione seu curso</option>
+                        <option value="TADS">Tecnologia em Análise e Desenvolvimento de Sistemas</option>
+                        <option value="Outro">Outro/Externo</option>
+                    </select>
 
-            <input type="hidden" name="latitude" id="latitude">
-            <input type="hidden" name="longitude" id="longitude">
+                    <select name="turma" required>
+                        <option value="" disabled selected>Selecione sua turma</option>
+                        <option value="TADS 1">TADS 1</option>
+                        <option value="TADS 2">TADS 2</option>
+                        <option value="TADS 4">TADS 4</option>
+                        <option value="TADS 5">TADS 5</option>
+                        <option value="Outro">Outro/Externo</option>
+                    </select>
 
-            <button type="submit">Registrar Presença</button>
-        </form>
+                    <input type="text" name="externo_info" id="externo_info" placeholder="Se for de outra faculdade, escreva qual" required style="display: none;">
 
-        <div class="info">
-            Sua localização será capturada automaticamente.<br>
-            Por favor, permita o acesso à localização.
-        </div>
-    </div>
+                    <input type="hidden" name="latitude" id="latitude">
+                    <input type="hidden" name="longitude" id="longitude">
+
+                    <button type="submit">Enviar Presença</button>
+
+                    {% if success_message %}
+                        <div class="success">{{ success_message }}</div>
+                    {% endif %}
+                </form>
+            </td>
+        </tr>
+    </table>
 
     <script>
-        function obterLocalizacao() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    document.getElementById('latitude').value = position.coords.latitude;
-                    document.getElementById('longitude').value = position.coords.longitude;
-                }, function(error) {
-                    alert('Erro ao obter localização: ' + error.message);
-                });
+        function checkExterno() {
+            var curso = document.getElementById('curso').value;
+            var externoInput = document.getElementById('externo_info');
+            if (curso === 'Outro') {
+                externoInput.style.display = 'block';
+                externoInput.required = true;
             } else {
-                alert('Geolocalização não suportada pelo seu navegador.');
+                externoInput.style.display = 'none';
+                externoInput.required = false;
             }
         }
-        window.onload = obterLocalizacao;
+
+        function checkLocation() {
+            if (!navigator.geolocation) {
+                alert('Geolocalização não é suportada pelo seu navegador.');
+                return false;
+            }
+
+            navigator.geolocation.getCurrentPosition(function(position) {
+                document.getElementById('latitude').value = position.coords.latitude;
+                document.getElementById('longitude').value = position.coords.longitude;
+                document.forms[0].submit();
+            }, function() {
+                alert('Erro ao obter localização: ative a localização e recarregue a página.');
+            });
+
+            return false; // impedir envio até obter localização
+        }
     </script>
 
 </body>

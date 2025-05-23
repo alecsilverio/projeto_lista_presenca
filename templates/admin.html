@@ -1,15 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>Admin - Baixar Presença</title>
+    <meta charset="UTF-8">
+    <title>Admin - Lista de Presença</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+    </style>
 </head>
 <body>
-    <h1>Login Admin</h1>
-    {% if msg %}<p>{{ msg }}</p>{% endif %}
-    <form method="POST">
-        <label>Senha:</label><br>
-        <input type="password" name="senha" required><br>
-        <button type="submit">Entrar</button>
-    </form>
+    <h1>Admin - Lista de Presença</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>CPF/RA</th>
+                <th>Curso</th>
+                <th>Turma</th>
+                <th>Externo Info</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in presencas[1:] %}
+            <tr>
+                <td>{{ row[0] }}</td>
+                <td>{{ row[1] }}</td>
+                <td>{{ row[2] }}</td>
+                <td>{{ row[3] }}</td>
+                <td>{{ row[4] }}</td>
+                <td>{{ row[5] }}</td>
+                <td>{{ row[6] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>
+
+
+{# http://127.0.0.1:5000/admin?senha=051012 #}
